@@ -1,0 +1,187 @@
+import time
+from grid import Grid
+from movelog import Move
+
+def get_values(v_type):
+    if v_type == "grid":
+        pass
+    if v_type == "parms":
+        nums = input("How many numbers would you like from 27 to 39:")
+        try:
+            nums = int(nums)
+        except:
+            print(f"{nums} is not a number")
+            nums = get_values("parms")
+        if nums < 27:
+            print(f"{nums} is below 27, setting to 27")
+            nums = 27
+        if nums > 39:
+            print(f"{nums} is above 39, setting to 39")
+            nums = 39
+        return nums
+
+def solve_puzzle(puzzle):
+    if puzzle == None:
+        return
+    while puzzle.solved == False and puzzle.updated == True:
+        #print(f"Puzzle Passses: {puzzle.passes}")
+        #print(repr(puzzle))
+        solve_puzzle_r(puzzle)
+        if puzzle.updated == False:
+            print(f"{puzzle.passes} hit deadlock")
+            solve_pick_deadlock(puzzle)
+
+def solve_puzzle_r(puzzle):
+    puzzle.passes += 1
+    puzzle.updated = False
+    for row in puzzle.data.values():
+        for column in row.values():
+            # for each number go through each cell one by one
+            for option in range(1,10):
+                #loop through the numbers 1 to 9
+    
+                if column.val == option:
+                    # if the cell has a value check if that value matches the number,
+                    # if it does call grid.remove_option_row_column
+                    puzzle.remove_option_subgrid(option, column)
+                    puzzle.remove_option_row_column(option, column)
+                    break
+                    # skip the rest of the row
+
+                if column.val == None and column.is_option(option) == "y":
+                    only_option = True
+                    # for this cell, if this value is an option.
+                    for cell in row.values():# if the value is an option in this row but only for this subgrid
+                        if cell.get_subgrid() != column.get_subgrid() and cell.is_option(option) == "y":
+                            only_option = False
+                    if only_option == True:
+                        # clear it from the rest of the subgrid.
+                        puzzle.remove_option_subgrid(option, column, "row")
+
+                    x, y = column.get_grid_pos()
+                    only_option = True
+                    for c_row in puzzle.data.values():
+                        for c_col in c_row.values():
+                            c_x, c_y = c_col.get_grid_pos()
+                            if c_y == y and c_col.get_subgrid() != column.get_subgrid() and c_col.is_option(option) == "y":
+                                # if the value is an option in this column, but only for this subgrid
+                                only_option = False
+                    if only_option == True:
+                        # clear it from the rest of the subgrid.
+                        puzzle.remove_option_subgrid(option, column, "col")
+                    
+                    # see if the value is only an option for this cell in this row or column
+                    if puzzle.check_if_option_exists_row_column(option, column) == False:
+                        puzzle.set_option_as_value(option, column)
+                        break
+                        
+                    # or this subgrid
+                    if puzzle.check_option_subgrid(option, column) == False:
+                        puzzle.set_option_as_value(option, column)
+                        break
+
+                    if column.has_options() == 1:
+                        # if the cell has no value check the potential numbers
+                        # if the number is one of the potential ones check if there are any other potential numbers
+                        # if not set the cell to the number and call remove_option_row_column
+                        puzzle.set_option_as_value(option, column)
+                        break
+
+                if column.val == None and column.has_options() == 0:
+                    if puzzle.origin == dict():
+                        print("bad solve")
+                        return
+                    else:
+                        print("++++++++++++++++++++++++++++++++++++++++++++++++++")
+                        print(f"Cell at {column.get_grid_pos()} has no options")
+                        print(repr(puzzle))
+                        print(repr(puzzle.change))
+                        print("++++++++++++++++++++++++++++++++++++++++++++++++++")
+                        rollback(puzzle)
+                        #puzzle.print_log()
+                        #raise Exception("Now you need to roll back to the last deadlock and pick again")
+
+    solved = True
+    for row in puzzle.data.values():
+        for col in row.values():
+            if col.val == None:
+                solved = False
+    puzzle.solved = solved
+
+def solve_pick_deadlock(puzzle):
+    if puzzle == None:
+        return
+    if puzzle.solved == True:
+        return
+    print(repr(puzzle))
+    puzzle.pick_deadlock()
+
+def rollback(puzzle):
+    if puzzle.change == None:
+        raise Exception("No moves made")
+    if puzzle.change.value == "start":
+        raise Exception("this is the start move")
+    move = puzzle.change
+    while move.deadlock != True:
+        move = rollback_r(move)
+        if move.value == "start":
+            raise Exception("invalid move")
+
+    new_move = Move(move.changed_cell, None, move.prev_move, next_move=None,  deadlock=True)
+    new_move.dead_ends = move.dead_ends
+    new_move.dead_ends.append(move)
+    move.changed_cell.clear_val()
+    puzzle.fix_options()
+    for dead_end in new_move.dead_ends:
+        new_move.changed_cell.remove_option(dead_end.value)
+    
+    newvalue = new_move.changed_cell.pick_one()
+    if newvalue == None:
+        move = rollback_r(move)
+        puzzle.change = move
+        rollback(puzzle)
+        return
+    new_move.changed_cell.set_val(newvalue)
+    new_move.value = newvalue
+
+    puzzle.change = new_move
+    print(repr(puzzle.change))
+
+def rollback_r(move):
+    if move == None:
+        raise Exception("No moves made")
+    cell = move.changed_cell
+    if cell == None:
+        raise Exception("no cell stored")
+    cell.clear_val()
+    return move.prev_move
+
+
+def main():
+    start = time.time()
+    # https://abcnews.go.com/blogs/headlines/2012/06/can-you-solve-the-hardest-ever-sudoku
+    fill = {
+        0: {0:8,},
+        1: {2:3, 3:6,},
+        2: {1:7, 4:9, 6:2},
+        3: {1:5, 5:7,},
+        4: {4:4, 5:5, 6:7,},
+        5: {3:1, 7:3,},
+        6: {2:1, 7:6, 8:8,},
+        7: {2:8, 3:5, 7:1,},
+        8: {1:9, 6:4,},
+    }
+    grid2 = Grid(fill)
+    print(repr(grid2))
+    solve_puzzle(grid2)
+    print(grid2)
+    print(f"the solve took {grid2.passes} passes")
+    end = time.time() #somewhere later
+    print("The time of execution of above program is :",
+          (end-start) * 10**3, "ms")
+    grid2.print_log()
+
+if __name__ == "__main__":
+    main()
+
+
