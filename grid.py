@@ -70,11 +70,12 @@ class Grid():
         return False
 
     def set_option_as_value(self, option, cell, deadlock=False):
+        options = cell.get_options()
         cell.set_val(option)
         self.remove_option_row_column(option, cell)
         self.remove_option_subgrid(option, cell)
         self.updated = True
-        move = Move(cell, option, self.change, None,  deadlock)
+        move = Move(cell, option, self.change, None,  deadlock, options)
         self.change = move
 
     def pick_deadlock(self):
@@ -151,7 +152,7 @@ class Grid():
         if currentmove.value == "start":
             print(repr(currentmove))
         else:
-            print(repr(currentmove), depth)
+            print(repr(currentmove))
         if currentmove.dead_ends != []:
             for dead_end in currentmove.dead_ends:
                 depth += 1

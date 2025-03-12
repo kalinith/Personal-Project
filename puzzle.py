@@ -24,11 +24,8 @@ def solve_puzzle(puzzle):
     if puzzle == None:
         return
     while puzzle.solved == False and puzzle.updated == True:
-        #print(f"Puzzle Passses: {puzzle.passes}")
-        #print(repr(puzzle))
         solve_puzzle_r(puzzle)
         if puzzle.updated == False:
-            print(f"{puzzle.passes} hit deadlock")
             solve_pick_deadlock(puzzle)
 
 def solve_puzzle_r(puzzle):
@@ -46,7 +43,7 @@ def solve_puzzle_r(puzzle):
                     puzzle.remove_option_subgrid(option, column)
                     puzzle.remove_option_row_column(option, column)
                     break
-                    # skip the rest of the row
+                    # skip the rest of the range
 
                 if column.val == None and column.is_option(option) == "y":
                     only_option = True
@@ -92,14 +89,7 @@ def solve_puzzle_r(puzzle):
                         print("bad solve")
                         return
                     else:
-                        print("++++++++++++++++++++++++++++++++++++++++++++++++++")
-                        print(f"Cell at {column.get_grid_pos()} has no options")
-                        print(repr(puzzle))
-                        print(repr(puzzle.change))
-                        print("++++++++++++++++++++++++++++++++++++++++++++++++++")
                         rollback(puzzle)
-                        #puzzle.print_log()
-                        #raise Exception("Now you need to roll back to the last deadlock and pick again")
 
     solved = True
     for row in puzzle.data.values():
@@ -113,10 +103,11 @@ def solve_pick_deadlock(puzzle):
         return
     if puzzle.solved == True:
         return
-    print(repr(puzzle))
     puzzle.pick_deadlock()
 
 def rollback(puzzle):
+    print("++++++++++++++++++++Start by showing the log+++++++++++++++++++++")
+    puzzle.print_log()
     if puzzle.change == None:
         raise Exception("No moves made")
     if puzzle.change.value == "start":
@@ -126,17 +117,22 @@ def rollback(puzzle):
         move = rollback_r(move)
         if move.value == "start":
             raise Exception("invalid move")
+    print(f"\n+++++++++++++now show the move that needs to change++++++++++++++")
+    print(repr(move))
+    print(f"\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
-    new_move = Move(move.changed_cell, None, move.prev_move, next_move=None,  deadlock=True)
+    new_move = Move(move.changed_cell, None, move.prev_move, None,  True, move.viable_values)
     new_move.dead_ends = move.dead_ends
     new_move.dead_ends.append(move)
     move.changed_cell.clear_val()
     puzzle.fix_options()
+
     for dead_end in new_move.dead_ends:
         new_move.changed_cell.remove_option(dead_end.value)
     
     newvalue = new_move.changed_cell.pick_one()
     if newvalue == None:
+        print("no value here")
         move = rollback_r(move)
         puzzle.change = move
         rollback(puzzle)
@@ -145,7 +141,8 @@ def rollback(puzzle):
     new_move.value = newvalue
 
     puzzle.change = new_move
-    print(repr(puzzle.change))
+    print(f"\n+++++++++++++++++++++This is the new move++++++++++++++++++++++++")
+    print(repr(new_move))
 
 def rollback_r(move):
     if move == None:
