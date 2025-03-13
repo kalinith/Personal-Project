@@ -113,6 +113,9 @@ class Grid():
     def fix_options(self):
         for row in self.data.values():
             for cell in row.values():
+                cell.init_option()
+        for row in self.data.values():
+            for cell in row.values():
                 if cell.val != None:
                     cell.init_option("n")
                     self.remove_option_subgrid(cell.val, cell)
@@ -147,12 +150,10 @@ class Grid():
             currentmove = self.start
         while currentmove.next_move != None:
             currentmove = self.print_log_r(currentmove, depth)
+        print(repr(currentmove))
 
     def print_log_r(self, currentmove, depth):
-        if currentmove.value == "start":
-            print(repr(currentmove))
-        else:
-            print(repr(currentmove))
+        print(repr(currentmove))
         if currentmove.dead_ends != []:
             for dead_end in currentmove.dead_ends:
                 depth += 1

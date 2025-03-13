@@ -112,37 +112,38 @@ def rollback(puzzle):
         raise Exception("No moves made")
     if puzzle.change.value == "start":
         raise Exception("this is the start move")
-    move = puzzle.change
-    while move.deadlock != True:
-        move = rollback_r(move)
-        if move.value == "start":
+    old_move = puzzle.change
+    while old_move.deadlock != True:
+        old_move = rollback_r(old_move)
+        if old_move.value == "start":
             raise Exception("invalid move")
     print(f"\n+++++++++++++now show the move that needs to change++++++++++++++")
-    print(repr(move))
+    print(repr(old_move))
     print(f"\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
-    new_move = Move(move.changed_cell, None, move.prev_move, None,  True, move.viable_values)
-    new_move.dead_ends = move.dead_ends
-    new_move.dead_ends.append(move)
-    move.changed_cell.clear_val()
-    puzzle.fix_options()
-
-    for dead_end in new_move.dead_ends:
-        new_move.changed_cell.remove_option(dead_end.value)
-    
-    newvalue = new_move.changed_cell.pick_one()
-    if newvalue == None:
+    puzzle.change = Move(old_move.changed_cell,None,old_move.prev_move,None,True,old_move.viable_values)
+    puzzle.dead_ends = old_move.dead_ends
+    puzzle.dead_ends.append(old_move)
+    puzzle.change.viable_values.remove(old_move.value)
+    if len(puzzle.change.viable_values) == 0:
         print("no value here")
-        move = rollback_r(move)
-        puzzle.change = move
+        old_move = rollback_r(old_move)
+        puzzle.change = old_move
         rollback(puzzle)
         return
-    new_move.changed_cell.set_val(newvalue)
-    new_move.value = newvalue
 
-    puzzle.change = new_move
-    print(f"\n+++++++++++++++++++++This is the new move++++++++++++++++++++++++")
-    print(repr(new_move))
+    val = puzzle.change.viable_values[0]
+    puzzle.change.changed_cell.set_val(val)
+    puzzle.change.value = val
+
+    puzzle.fix_options() # I think this function is fucked
+    puzzle.updated = True
+    #print(f"\n+++++++++++++++++++++This is the new move++++++++++++++++++++++++")
+    #print(repr(puzzle.change))
+    #print(f"\n++++++++++++++++The new movelog looks like this++++++++++++++++++")
+    #puzzle.print_log()
+    #print(f"\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+    #exit(1)
 
 def rollback_r(move):
     if move == None:

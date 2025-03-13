@@ -12,7 +12,12 @@ class Move():
         self.dead_ends = list()
         self.viable_values = options
         
-
+    def updateRef(self, ref, val):
+        if ref == "prev":
+            self.prev_move = val
+        elif ref == "next":
+            self.next_move = val
+        return
 
     def __str__(self):
         if self.changed_cell == None and self.value == "start":
