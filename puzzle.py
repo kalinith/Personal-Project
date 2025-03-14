@@ -167,7 +167,7 @@ def main():
     end = time.time() #somewhere later
     print("The time of execution of above program is :",
           (end-start) * 10**3, "ms")
-    grid2.print_log()
+    # grid2.print_log()
 
 if __name__ == "__main__":
     main()
