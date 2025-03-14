@@ -1,6 +1,7 @@
 import time
 from grid import Grid
 from movelog import Move
+from cell import test_number
 
 def get_values(v_type):
     if v_type == "grid":
@@ -24,11 +25,8 @@ def solve_puzzle(puzzle):
     if puzzle == None:
         return
     while puzzle.solved == False and puzzle.updated == True:
-        #print(f"Puzzle Passses: {puzzle.passes}")
-        #print(repr(puzzle))
         solve_puzzle_r(puzzle)
         if puzzle.updated == False:
-            print(f"{puzzle.passes} hit deadlock")
             solve_pick_deadlock(puzzle)
 
 def solve_puzzle_r(puzzle):
@@ -46,7 +44,7 @@ def solve_puzzle_r(puzzle):
                     puzzle.remove_option_subgrid(option, column)
                     puzzle.remove_option_row_column(option, column)
                     break
-                    # skip the rest of the row
+                    # skip the rest of the range
 
                 if column.val == None and column.is_option(option) == "y":
                     only_option = True
@@ -92,14 +90,8 @@ def solve_puzzle_r(puzzle):
                         print("bad solve")
                         return
                     else:
-                        print("++++++++++++++++++++++++++++++++++++++++++++++++++")
-                        print(f"Cell at {column.get_grid_pos()} has no options")
-                        print(repr(puzzle))
-                        print(repr(puzzle.change))
-                        print("++++++++++++++++++++++++++++++++++++++++++++++++++")
                         rollback(puzzle)
-                        #puzzle.print_log()
-                        #raise Exception("Now you need to roll back to the last deadlock and pick again")
+                        return
 
     solved = True
     for row in puzzle.data.values():
@@ -113,39 +105,36 @@ def solve_pick_deadlock(puzzle):
         return
     if puzzle.solved == True:
         return
-    print(repr(puzzle))
     puzzle.pick_deadlock()
+    puzzle.deadlocks += 1
 
 def rollback(puzzle):
     if puzzle.change == None:
         raise Exception("No moves made")
     if puzzle.change.value == "start":
         raise Exception("this is the start move")
-    move = puzzle.change
-    while move.deadlock != True:
-        move = rollback_r(move)
-        if move.value == "start":
+    old_move = puzzle.change
+    while old_move.deadlock != True:
+        old_move = rollback_r(old_move)
+        if old_move.value == "start":
             raise Exception("invalid move")
 
-    new_move = Move(move.changed_cell, None, move.prev_move, next_move=None,  deadlock=True)
-    new_move.dead_ends = move.dead_ends
-    new_move.dead_ends.append(move)
-    move.changed_cell.clear_val()
-    puzzle.fix_options()
-    for dead_end in new_move.dead_ends:
-        new_move.changed_cell.remove_option(dead_end.value)
-    
-    newvalue = new_move.changed_cell.pick_one()
-    if newvalue == None:
-        move = rollback_r(move)
-        puzzle.change = move
+    puzzle.change = Move(old_move.changed_cell,None,old_move.prev_move,None,True,old_move.viable_values)
+    puzzle.dead_ends = old_move.dead_ends
+    puzzle.dead_ends.append(old_move)
+    puzzle.change.viable_values.remove(old_move.value)
+    if len(puzzle.change.viable_values) == 0:
+        old_move = rollback_r(old_move)
+        puzzle.change = old_move
         rollback(puzzle)
         return
-    new_move.changed_cell.set_val(newvalue)
-    new_move.value = newvalue
 
-    puzzle.change = new_move
-    print(repr(puzzle.change))
+    val = puzzle.change.viable_values[0]
+    puzzle.change.changed_cell.set_val(val)
+    puzzle.change.value = val
+
+    puzzle.fix_options()
+    puzzle.updated = True
 
 def rollback_r(move):
     if move == None:
@@ -159,27 +148,26 @@ def rollback_r(move):
 
 def main():
     start = time.time()
-    # https://abcnews.go.com/blogs/headlines/2012/06/can-you-solve-the-hardest-ever-sudoku
     fill = {
-        0: {0:8,},
-        1: {2:3, 3:6,},
-        2: {1:7, 4:9, 6:2},
-        3: {1:5, 5:7,},
-        4: {4:4, 5:5, 6:7,},
-        5: {3:1, 7:3,},
-        6: {2:1, 7:6, 8:8,},
-        7: {2:8, 3:5, 7:1,},
-        8: {1:9, 6:4,},
+        0: {4:3,},
+        1: {0:7, 1:1, 3:5, 6:8,},
+        2: {0:6, 4:7, 6:4, 7:1, 8:5,},
+        3: {2:3, 6:2, 8:8,},
+        4: {},
+        5: {0:8, 7:5, 8:7,},
+        6: {1:7, 5:4, 7:9,},
+        7: {2:2, 3:7, 7:3,},
+        8: {0:5, 1:4, 5:6,},
     }
     grid2 = Grid(fill)
     print(repr(grid2))
     solve_puzzle(grid2)
     print(grid2)
-    print(f"the solve took {grid2.passes} passes")
+    print(f"the solve took {grid2.passes} passes and had {grid2.deadlocks} deadlocks")
     end = time.time() #somewhere later
     print("The time of execution of above program is :",
           (end-start) * 10**3, "ms")
-    grid2.print_log()
+    # grid2.print_log()
 
 if __name__ == "__main__":
     main()

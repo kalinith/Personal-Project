@@ -297,12 +297,52 @@ class Tests(unittest.TestCase):
 ╚═════╩═════╩═════╝'''
             )
         self.assertEqual(
-            len(grid2.deadlocks),
-            2
+            grid2.deadlocks,
+            1
             )
         self.assertEqual(
             grid2.passes,
-            16
+            10
+            )
+
+    def test_solve_hardest_puzzle(self):
+        # https://abcnews.go.com/blogs/headlines/2012/06/can-you-solve-the-hardest-ever-sudoku
+        fill = {
+            0: {0:8,},
+            1: {2:3, 3:6,},
+            2: {1:7, 4:9, 6:2},
+            3: {1:5, 5:7,},
+            4: {4:4, 5:5, 6:7,},
+            5: {3:1, 7:3,},
+            6: {2:1, 7:6, 8:8,},
+            7: {2:8, 3:5, 7:1,},
+            8: {1:9, 6:4,},
+        }
+        grid2 = Grid(fill)
+        solve_puzzle(grid2)
+        self.assertEqual(
+            str(grid2),
+            '''╔═════╦═════╦═════╗
+║8│1│2║7│5│3║6│4│9║
+║9│4│3║6│8│2║1│7│5║
+║6│7│5║4│9│1║2│8│3║
+╠═════╬═════╬═════╣
+║1│5│4║2│3│7║8│9│6║
+║3│6│9║8│4│5║7│2│1║
+║2│8│7║1│6│9║5│3│4║
+╠═════╬═════╬═════╣
+║5│2│1║9│7│4║3│6│8║
+║4│3│8║5│2│6║9│1│7║
+║7│9│6║3│1│8║4│5│2║
+╚═════╩═════╩═════╝'''
+            )
+        self.assertEqual(
+            grid2.deadlocks,
+            33
+            )
+        self.assertEqual(
+            grid2.passes,
+            164
             )
 
 if __name__ == "__main__":

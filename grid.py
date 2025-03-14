@@ -25,7 +25,7 @@ class Grid():
         self.solved = False
         self.passes = 0
         self.updated = True
-        self.resets = 0
+        self.deadlocks = 0
         self.change = Move()
         self.change.value = "start"
         self.start = self.change
@@ -70,11 +70,12 @@ class Grid():
         return False
 
     def set_option_as_value(self, option, cell, deadlock=False):
+        options = cell.get_options()
         cell.set_val(option)
         self.remove_option_row_column(option, cell)
         self.remove_option_subgrid(option, cell)
         self.updated = True
-        move = Move(cell, option, self.change, None,  deadlock)
+        move = Move(cell, option, self.change, None,  deadlock, options)
         self.change = move
 
     def pick_deadlock(self):
@@ -98,18 +99,18 @@ class Grid():
                     # the puzzle has started on a deadlock
                     break
                 if self.change.next_move != None:
-                    print("why is next move not none?")
                     for next_move in self.change.next_move:
                         if next_move.changed_cell == least_cell and next_move.change == option:
                             used = True
                 if used == False:
                     break
-        print(f"--------------------------------------------Deadlock--------------------------------------------")
-        print(f"{least_cell}. the option chosen was {option}")
-        print(f"------------------------------------------------------------------------------------------------")
         self.set_option_as_value(option, least_cell, True)
 
     def fix_options(self):
+        for row in self.data.values():
+            for cell in row.values():
+                if cell.val == None:
+                    cell.init_option()
         for row in self.data.values():
             for cell in row.values():
                 if cell.val != None:
@@ -117,27 +118,27 @@ class Grid():
                     self.remove_option_subgrid(cell.val, cell)
                     self.remove_option_row_column(cell.val, cell)
                     continue
-                for option in range(1,10):
-                    if cell.is_option(option) == "y":
-                        only_option = True
-                        for cell in row.values():# if the value is an option in this row but only for this subgrid
-                            if cell.get_subgrid() != cell.get_subgrid() and cell.is_option(option) == "y":
-                                only_option = False
-                        if only_option == True:
+                #for option in range(1,10):
+                #    if cell.is_option(option) == "y":
+                #        only_option = True
+                #        for cell in row.values():# if the value is an option in this row but only for this subgrid
+                #            if cell.get_subgrid() != cell.get_subgrid() and cell.is_option(option) == "y":
+                #                only_option = False
+                #        if only_option == True:
                             # clear it from the rest of the subgrid.
-                            self.remove_option_subgrid(option, cell, "row")
+                #            self.remove_option_subgrid(option, cell, "row")
 
-                        x, y = cell.get_grid_pos()
-                        only_option = True
-                        for c_row in self.data.values():
-                            for c_col in c_row.values():
-                                c_x, c_y = c_col.get_grid_pos()
-                                if c_y == y and c_col.get_subgrid() != cell.get_subgrid() and c_col.is_option(option) == "y":
+                #        x, y = cell.get_grid_pos()
+                #        only_option = True
+                #        for c_row in self.data.values():
+                #            for c_col in c_row.values():
+                #                c_x, c_y = c_col.get_grid_pos()
+                #                if c_y == y and c_col.get_subgrid() != cell.get_subgrid() and c_col.is_option(option) == "y":
                                     # if the value is an option in this column, but only for this subgrid
-                                    only_option = False
-                        if only_option == True:
-                            # clear it from the rest of the subgrid.
-                            self.remove_option_subgrid(option, cell, "col")
+                #                    only_option = False
+                #        if only_option == True:
+                #            # clear it from the rest of the subgrid.
+                #            self.remove_option_subgrid(option, cell, "col")
 
 #########Printing the move log#######
 
@@ -146,12 +147,10 @@ class Grid():
             currentmove = self.start
         while currentmove.next_move != None:
             currentmove = self.print_log_r(currentmove, depth)
+        print(repr(currentmove))
 
     def print_log_r(self, currentmove, depth):
-        if currentmove.value == "start":
-            print(repr(currentmove))
-        else:
-            print(repr(currentmove), depth)
+        print(repr(currentmove))
         if currentmove.dead_ends != []:
             for dead_end in currentmove.dead_ends:
                 depth += 1

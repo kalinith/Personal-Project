@@ -1,7 +1,7 @@
 from cell import Cell
 
 class Move():
-    def __init__(self, cell=None, value=None, prev_move=None, next_move=None,  deadlock=False):
+    def __init__(self, cell=None, value=None, prev_move=None, next_move=None,  deadlock=False, options=None):
         self.changed_cell = cell
         self.value = value
         self.prev_move = prev_move
@@ -10,7 +10,14 @@ class Move():
         if self.prev_move != None:
             prev_move.next_move = self
         self.dead_ends = list()
-        self.viable_values = list()
+        self.viable_values = options
+        
+    def updateRef(self, ref, val):
+        if ref == "prev":
+            self.prev_move = val
+        elif ref == "next":
+            self.next_move = val
+        return
 
     def __str__(self):
         if self.changed_cell == None and self.value == "start":
@@ -20,21 +27,21 @@ class Move():
         else:
             return("-")
 
-    def __repr__(self,cnt=0):
+    def __repr__(self):
         output = list()
         indent = ""
-        for i in range(cnt):
-            indent += " "
         if self.changed_cell == None and self.value == "start":
-            output.append(f"Changed Cell     : This is the start of the change log:")
-            output.append(f"{indent}Value            : ")
+            output.append(f"Changed Cell         : This is the start of the change log:")
+            output.append(f"{indent}Value                : start")
         else:
-            output.append(f"{indent}Changed Cell     : {self.changed_cell.get_grid_pos()}")
-            output.append(f"{indent}Value            : {self.value}")
-        output.append(f"{indent}Previous move    : {self.prev_move}")
-        output.append(f"{indent}Next move        : {self.next_move}")
-        output.append(f"{indent}Deadlocked       : {self.deadlock}")
-        output.append(f"{indent}list of dead ends: {self.dead_ends}")
+            output.append(f"{indent}Changed Cell         : {self.changed_cell.get_grid_pos()}")
+            output.append(f"{indent}Value                : {self.value}")
+        output.append(f"{indent}Previous move        : {self.prev_move}")
+        output.append(f"{indent}Next move            : {self.next_move}")
+        output.append(f"{indent}Deadlocked           : {self.deadlock}")
+        output.append(f"{indent}list of dead ends    :\n{self.dead_ends}")
+        output.append(f"{indent}List of viable values: {self.viable_values}")
+        output.append("====================================================\n")
         return "\n".join(output)
 
 
