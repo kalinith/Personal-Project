@@ -306,6 +306,7 @@ class Tests(unittest.TestCase):
             )
 
     def test_solve_hardest_puzzle(self):
+        # https://abcnews.go.com/blogs/headlines/2012/06/can-you-solve-the-hardest-ever-sudoku
         fill = {
             0: {0:8,},
             1: {2:3, 3:6,},

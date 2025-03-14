@@ -1,6 +1,7 @@
 import time
 from grid import Grid
 from movelog import Move
+from cell import test_number
 
 def get_values(v_type):
     if v_type == "grid":
@@ -132,7 +133,7 @@ def rollback(puzzle):
     puzzle.change.changed_cell.set_val(val)
     puzzle.change.value = val
 
-    puzzle.fix_options() # I think this function is fucked
+    puzzle.fix_options()
     puzzle.updated = True
 
 def rollback_r(move):
@@ -147,17 +148,16 @@ def rollback_r(move):
 
 def main():
     start = time.time()
-    # https://abcnews.go.com/blogs/headlines/2012/06/can-you-solve-the-hardest-ever-sudoku
     fill = {
-        0: {0:8,},
-        1: {2:3, 3:6,},
-        2: {1:7, 4:9, 6:2},
-        3: {1:5, 5:7,},
-        4: {4:4, 5:5, 6:7,},
-        5: {3:1, 7:3,},
-        6: {2:1, 7:6, 8:8,},
-        7: {2:8, 3:5, 7:1,},
-        8: {1:9, 6:4,},
+        0: {4:3,},
+        1: {0:7, 1:1, 3:5, 6:8,},
+        2: {0:6, 4:7, 6:4, 7:1, 8:5,},
+        3: {2:3, 6:2, 8:8,},
+        4: {},
+        5: {0:8, 7:5, 8:7,},
+        6: {1:7, 5:4, 7:9,},
+        7: {2:2, 3:7, 7:3,},
+        8: {0:5, 1:4, 5:6,},
     }
     grid2 = Grid(fill)
     print(repr(grid2))
@@ -167,7 +167,7 @@ def main():
     end = time.time() #somewhere later
     print("The time of execution of above program is :",
           (end-start) * 10**3, "ms")
-    #grid2.print_log()
+    grid2.print_log()
 
 if __name__ == "__main__":
     main()
