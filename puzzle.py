@@ -90,6 +90,7 @@ def solve_puzzle_r(puzzle):
                         return
                     else:
                         rollback(puzzle)
+                        return
 
     solved = True
     for row in puzzle.data.values():
@@ -106,6 +107,8 @@ def solve_pick_deadlock(puzzle):
     puzzle.pick_deadlock()
 
 def rollback(puzzle):
+    print("++++++++++++++++++++The grid before rollback+++++++++++++++++++++")
+    print(repr(puzzle))
     print("++++++++++++++++++++Start by showing the log+++++++++++++++++++++")
     puzzle.print_log()
     if puzzle.change == None:
@@ -138,11 +141,13 @@ def rollback(puzzle):
 
     puzzle.fix_options() # I think this function is fucked
     puzzle.updated = True
-    #print(f"\n+++++++++++++++++++++This is the new move++++++++++++++++++++++++")
-    #print(repr(puzzle.change))
-    #print(f"\n++++++++++++++++The new movelog looks like this++++++++++++++++++")
-    #puzzle.print_log()
-    #print(f"\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+    print(f"\n+++++++++++++++++++++This is the new move++++++++++++++++++++++++")
+    print(repr(puzzle.change))
+    print(f"\n++++++++++++++++The new movelog looks like this++++++++++++++++++")
+    puzzle.print_log()
+    print(f"\n+++++++++++++++++++++The grid after rollback+++++++++++++++++++++")
+    print(repr(puzzle))
+    print(f"\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     #exit(1)
 
 def rollback_r(move):

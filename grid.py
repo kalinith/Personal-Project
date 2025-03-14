@@ -113,7 +113,8 @@ class Grid():
     def fix_options(self):
         for row in self.data.values():
             for cell in row.values():
-                cell.init_option()
+                if cell.val == None:
+                    cell.init_option()
         for row in self.data.values():
             for cell in row.values():
                 if cell.val != None:
@@ -121,27 +122,27 @@ class Grid():
                     self.remove_option_subgrid(cell.val, cell)
                     self.remove_option_row_column(cell.val, cell)
                     continue
-                for option in range(1,10):
-                    if cell.is_option(option) == "y":
-                        only_option = True
-                        for cell in row.values():# if the value is an option in this row but only for this subgrid
-                            if cell.get_subgrid() != cell.get_subgrid() and cell.is_option(option) == "y":
-                                only_option = False
-                        if only_option == True:
+                #for option in range(1,10):
+                #    if cell.is_option(option) == "y":
+                #        only_option = True
+                #        for cell in row.values():# if the value is an option in this row but only for this subgrid
+                #            if cell.get_subgrid() != cell.get_subgrid() and cell.is_option(option) == "y":
+                #                only_option = False
+                #        if only_option == True:
                             # clear it from the rest of the subgrid.
-                            self.remove_option_subgrid(option, cell, "row")
+                #            self.remove_option_subgrid(option, cell, "row")
 
-                        x, y = cell.get_grid_pos()
-                        only_option = True
-                        for c_row in self.data.values():
-                            for c_col in c_row.values():
-                                c_x, c_y = c_col.get_grid_pos()
-                                if c_y == y and c_col.get_subgrid() != cell.get_subgrid() and c_col.is_option(option) == "y":
+                #        x, y = cell.get_grid_pos()
+                #        only_option = True
+                #        for c_row in self.data.values():
+                #            for c_col in c_row.values():
+                #                c_x, c_y = c_col.get_grid_pos()
+                #                if c_y == y and c_col.get_subgrid() != cell.get_subgrid() and c_col.is_option(option) == "y":
                                     # if the value is an option in this column, but only for this subgrid
-                                    only_option = False
-                        if only_option == True:
-                            # clear it from the rest of the subgrid.
-                            self.remove_option_subgrid(option, cell, "col")
+                #                    only_option = False
+                #        if only_option == True:
+                #            # clear it from the rest of the subgrid.
+                #            self.remove_option_subgrid(option, cell, "col")
 
 #########Printing the move log#######
 
