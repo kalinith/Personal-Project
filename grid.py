@@ -25,7 +25,7 @@ class Grid():
         self.solved = False
         self.passes = 0
         self.updated = True
-        self.resets = 0
+        self.deadlocks = 0
         self.change = Move()
         self.change.value = "start"
         self.start = self.change

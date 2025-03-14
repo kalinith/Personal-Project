@@ -105,6 +105,7 @@ def solve_pick_deadlock(puzzle):
     if puzzle.solved == True:
         return
     puzzle.pick_deadlock()
+    puzzle.deadlocks += 1
 
 def rollback(puzzle):
     if puzzle.change == None:
@@ -162,7 +163,7 @@ def main():
     print(repr(grid2))
     solve_puzzle(grid2)
     print(grid2)
-    print(f"the solve took {grid2.passes} passes")
+    print(f"the solve took {grid2.passes} passes and had {grid2.deadlocks} deadlocks")
     end = time.time() #somewhere later
     print("The time of execution of above program is :",
           (end-start) * 10**3, "ms")
