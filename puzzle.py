@@ -107,10 +107,6 @@ def solve_pick_deadlock(puzzle):
     puzzle.pick_deadlock()
 
 def rollback(puzzle):
-    print("++++++++++++++++++++The grid before rollback+++++++++++++++++++++")
-    print(repr(puzzle))
-    print("++++++++++++++++++++Start by showing the log+++++++++++++++++++++")
-    puzzle.print_log()
     if puzzle.change == None:
         raise Exception("No moves made")
     if puzzle.change.value == "start":
@@ -120,16 +116,12 @@ def rollback(puzzle):
         old_move = rollback_r(old_move)
         if old_move.value == "start":
             raise Exception("invalid move")
-    print(f"\n+++++++++++++now show the move that needs to change++++++++++++++")
-    print(repr(old_move))
-    print(f"\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
     puzzle.change = Move(old_move.changed_cell,None,old_move.prev_move,None,True,old_move.viable_values)
     puzzle.dead_ends = old_move.dead_ends
     puzzle.dead_ends.append(old_move)
     puzzle.change.viable_values.remove(old_move.value)
     if len(puzzle.change.viable_values) == 0:
-        print("no value here")
         old_move = rollback_r(old_move)
         puzzle.change = old_move
         rollback(puzzle)
@@ -141,14 +133,6 @@ def rollback(puzzle):
 
     puzzle.fix_options() # I think this function is fucked
     puzzle.updated = True
-    print(f"\n+++++++++++++++++++++This is the new move++++++++++++++++++++++++")
-    print(repr(puzzle.change))
-    print(f"\n++++++++++++++++The new movelog looks like this++++++++++++++++++")
-    puzzle.print_log()
-    print(f"\n+++++++++++++++++++++The grid after rollback+++++++++++++++++++++")
-    print(repr(puzzle))
-    print(f"\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-    #exit(1)
 
 def rollback_r(move):
     if move == None:
@@ -182,7 +166,7 @@ def main():
     end = time.time() #somewhere later
     print("The time of execution of above program is :",
           (end-start) * 10**3, "ms")
-    grid2.print_log()
+    #grid2.print_log()
 
 if __name__ == "__main__":
     main()

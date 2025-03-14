@@ -99,15 +99,11 @@ class Grid():
                     # the puzzle has started on a deadlock
                     break
                 if self.change.next_move != None:
-                    print("why is next move not none?")
                     for next_move in self.change.next_move:
                         if next_move.changed_cell == least_cell and next_move.change == option:
                             used = True
                 if used == False:
                     break
-        print(f"--------------------------------------------Deadlock--------------------------------------------")
-        print(f"{least_cell}. the option chosen was {option}")
-        print(f"------------------------------------------------------------------------------------------------")
         self.set_option_as_value(option, least_cell, True)
 
     def fix_options(self):
